@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Define the executable
 add_executable(SoundImageConverter
 	src/main.cpp
+ "include/SoundImageConverter/Encoder.h"	src/Encoder.cpp
 )
 
 # Include directories
