@@ -1,0 +1,20 @@
+# SoundImageConverter
+
+A C++ application to convert audio (WAV) files into images (PNG) and back, preserving all data losslessly.
+
+## Project Structure
+- `include/`: Header files
+- `src/`: Source files
+- `lib/`: External libraries
+- `tests/`: Unit tests
+- `resources/`: Sample assets
+- `build/`: Build outputs
+
+## Build Instructions
+1. Install CMake and a C++ compiler (e.g., Visual Studio 2022).
+2. Open the project folder in Visual Studio.
+3. Build using `Build > Build All`.
+
+## Requirements
+- C++17
+- CMake 3.15+
