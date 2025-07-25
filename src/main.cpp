@@ -1,5 +1,5 @@
 #include <iostream>
-#include "SoundImageConverter/Encoder.h"
+#include "SoundImageConverter/Converter.h"
 #include <filesystem>
 #include <sstream>
 
@@ -34,7 +34,10 @@ int main()
 {
 	std::string wavPath = "resources/sampleSound.wav";
 	std::string pngPath = generateUniqueFileName("resources/sampleSound.png");
+	std::string wavOutPath = generateUniqueFileName("resources/sampleSound_decoded.wav");
 
+
+	// Test encoding
 	if (SoundImageConverter::Encoder::encode(wavPath, pngPath))
 	{
 		std::cout << "Encoding successful!" << std::endl;
@@ -44,5 +47,17 @@ int main()
 		std::cerr << "Encoding failed!" << std::endl;
 		return 1;
 	}
+
+	// Test decoding
+	if (SoundImageConverter::Decoder::decode(pngPath, wavOutPath))
+	{
+		std::cout << "Decoding successful!" << std::endl;
+	}
+	else
+	{
+		std::cerr << "Decoding failed!" << std::endl;
+		return 1;
+	}
+
 	return 0;
 }

@@ -1,4 +1,4 @@
-#include "SoundImageConverter/Encoder.h"
+#include "SoundImageConverter/Converter.h"
 #include <sndfile.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
