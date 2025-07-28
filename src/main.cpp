@@ -70,7 +70,7 @@ int main(int, char**)
         if (hwnd)
         {
             SetWindowLongPtr(hwnd, GWL_EXSTYLE, GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TOPMOST);
-            SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 245, LWA_ALPHA);
+            //SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 245, LWA_ALPHA);
         }
     }
 #endif
@@ -157,7 +157,7 @@ int main(int, char**)
             }
         }
 
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.08f, 0.08f, 0.1f, 0.1f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -226,30 +226,19 @@ int main(int, char**)
             ImGui::SetCursorPos(ImVec2(0, 0));
             ImGui::InvisibleButton("##TitleBar", ImVec2(ImGui::GetWindowWidth() - 80, titleBarHeight));
             
-            if (ImGui::IsItemActive())
+#ifdef _WIN32
+            if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
             {
-                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				SDL_SysWMinfo wmInfo;
+                SDL_VERSION(&wmInfo.version);
+                if (SDL_GetWindowWMInfo(window, &wmInfo))
                 {
-                    ImVec2 mousePos = ImGui::GetMousePos();
-                    int windowX, windowY;
-                    SDL_GetWindowPosition(window, &windowX, &windowY);
-                    dragOffset = ImVec2(mousePos.x - windowX, mousePos.y - windowY);
-                    isDragging = true;
-                }
-                
-                if (isDragging && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.0f))
-                {
-                    ImVec2 mousePos = ImGui::GetMousePos();
-                    int newX = (int)(mousePos.x - dragOffset.x);
-                    int newY = (int)(mousePos.y - dragOffset.y);
-                    SDL_SetWindowPosition(window, newX, newY);
+                    HWND hwnd = wmInfo.info.win.window;
+                    ReleaseCapture();
+                    SendMessage(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
                 }
             }
-            else
-            {
-                isDragging = false;
-            }
-
+#endif
             // Main content
             ImGui::SetCursorPosY(titleBarHeight + 20);
             
