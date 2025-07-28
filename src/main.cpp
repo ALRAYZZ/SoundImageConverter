@@ -9,6 +9,12 @@
 #include <tinyfiledialogs.h>
 #include <string>
 
+// Add OpenGL headers
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <gl/GL.h>
+
 std::string generateUniqueFileName(const std::string& basePath)
 {
 	if (!std::filesystem::exists(basePath))

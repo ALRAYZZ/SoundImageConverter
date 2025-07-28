@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(SoundImageConverter LANGUAGES CXX)
+project(SoundImageConverter LANGUAGES CXX C)
 
 #Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -39,7 +39,7 @@ find_library(SNDFILE_LIBRARY
 )
 
 if (SNDFILE_LIBRARY)
-target_link_libraries(SoundImageConverter PRIVATE ${SNDFILE_LIBRARY})
+	target_link_libraries(SoundImageConverter PRIVATE ${SNDFILE_LIBRARY})
 else()
 	message(FATAL_ERROR "sndfile library not found. Please place sndfile in lib/libsndfile/.")
 endif()
@@ -55,15 +55,25 @@ NAMES SDL2main
 PATHS ${CMAKE_SOURCE_DIR}/lib/SDL2/lib
 )
 
-if (SDL2_LIBRARY)
-target_link_libraries(SoundImageConverter PRIVATE ${SDL2_LIBRARY})
+if (SDL2_LIBRARY AND SDL2MAIN_LIBRARY)
+	target_link_libraries(SoundImageConverter PRIVATE ${SDL2_LIBRARY} ${SDL2MAIN_LIBRARY})
 else()
-message(FATAL_ERROR "SDL2 not found. Please place SDL2 in lib/SDL2/")
+	message(FATAL_ERROR "SDL2 not found. Please place SDL2 in lib/SDL2/")
 endif()
 
 # Link OpenGL (required by ImGui)
 find_package(OpenGL REQUIRED)
 target_link_libraries(SoundImageConverter PRIVATE OpenGL::GL)
+
+# Widnows specificd libraries for tinyfiledialogs
+if (WIN32)
+	target_link_libraries(SoundImageConverter PRIVATE
+	user32
+	comdlg32
+	ole32
+	)
+endif()
+
 
 # Output directories for binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
