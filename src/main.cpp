@@ -47,12 +47,17 @@ int main(int, char**)
         return 1;
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
     SDL_Window* window = SDL_CreateWindow(
         "SoundImageConverter",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         480, 600,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALWAYS_ON_TOP
+        SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS
     );
     if (!window)
     {
@@ -64,21 +69,15 @@ int main(int, char**)
 #ifdef _WIN32
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version);
-    if (SDL_GetWindowWMInfo(window, &wmInfo))
-    {
-        HWND hwnd = wmInfo.info.win.window;
-        if (hwnd)
-        {
-            SetWindowLongPtr(hwnd, GWL_EXSTYLE, GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TOPMOST);
-            //SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 245, LWA_ALPHA);
-        }
-    }
+	SDL_GetWindowWMInfo(window, &wmInfo);
+	HWND hwnd = wmInfo.info.win.window;
+
+	// Set the window to be layered and transparent with per-pixel alpha
+	LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+	SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+	SetLayeredWindowAttributes(hwnd, 0, 255, LWA_COLORKEY);
 #endif
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     if (!glContext)
     {
@@ -101,14 +100,16 @@ int main(int, char**)
     // Styling
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 12.0f;
+    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     
     // Color scheme
     ImVec4* colors = style.Colors;
-    colors[ImGuiCol_WindowBg] = ImVec4(0.08f, 0.08f, 0.10f, 0.96f);
+    colors[ImGuiCol_WindowBg] = ImVec4(0.08f, 0.08f, 0.10f, 1.0f);
     colors[ImGuiCol_Header] = ImVec4(0.15f, 0.15f, 0.18f, 1.00f);
     colors[ImGuiCol_HeaderHovered] = ImVec4(0.22f, 0.22f, 0.25f, 1.00f);
     colors[ImGuiCol_HeaderActive] = ImVec4(0.28f, 0.28f, 0.31f, 1.00f);
-    colors[ImGuiCol_Button] = ImVec4(0.20f, 0.45f, 0.75f, 1.00f);  // Blue gradient base
+    colors[ImGuiCol_Button] = ImVec4(0.20f, 0.45f, 0.75f, 1.00f);
     colors[ImGuiCol_ButtonHovered] = ImVec4(0.25f, 0.55f, 0.85f, 1.00f);
     colors[ImGuiCol_ButtonActive] = ImVec4(0.30f, 0.60f, 0.90f, 1.00f);
     colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
@@ -157,7 +158,7 @@ int main(int, char**)
             }
         }
 
-        glClearColor(0.08f, 0.08f, 0.1f, 0.1f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -173,15 +174,28 @@ int main(int, char**)
                 ImGuiWindowFlags_NoMove | 
                 ImGuiWindowFlags_NoCollapse |
                 ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoScrollbar);
+                ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoBackground); // Important to avoid creating default ImGui background
+            
+            // Draw custom background with rounder corners manually
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImVec2 windowPos = ImGui::GetWindowPos();
+			ImVec2 windowSize = ImGui::GetWindowSize();
+			ImU32 backgroundColor = IM_COL32(20, 20, 30, 255); // Background color
+
+            drawList->AddRectFilled(
+                windowPos,
+                ImVec2(windowPos.x + windowSize.x, windowPos.y + windowSize.y),
+                backgroundColor,
+                style.WindowRounding
+            );
 
             // Title bar
             const float titleBarHeight = 48.0f;
             ImVec2 titleBarMin = ImGui::GetWindowPos();
             ImVec2 titleBarMax = ImVec2(titleBarMin.x + ImGui::GetWindowWidth(), titleBarMin.y + titleBarHeight);
             
-            ImDrawList* drawList = ImGui::GetWindowDrawList();
-            drawList->AddRectFilled(titleBarMin, titleBarMax, IM_COL32(20, 20, 25, 255));
+            drawList->AddRectFilled(titleBarMin, titleBarMax, IM_COL32(20, 20, 25, 255), style.WindowRounding, ImDrawFlags_RoundCornersAll);
             drawList->AddLine(ImVec2(titleBarMin.x, titleBarMax.y), titleBarMax, IM_COL32(80, 80, 90, 255));
             
             // Title with icon
